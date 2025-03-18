@@ -1,0 +1,13 @@
+*.o
+*.gcno
+*.gcda
+*.log
+*.json
+.cache
+*.out
+vgcore*
+*.json
+test
+*.so
+unit_tests
+.venv
