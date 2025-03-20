@@ -11,3 +11,5 @@ test
 *.so
 unit_tests
 .venv
+env
+__pycache__
