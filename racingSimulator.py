@@ -1,18 +1,13 @@
-import socket
-from Data.retrieveData import retrieveData
-from Lib.actionMessage import recvResponse, sendMessage
+from mlagents_envs.environment import UnityEnvironment
+from Data.RetrieveData import retrieveData
 
 def createConnection():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(("0.0.0.0", 8085))
-    return sock
+    return UnityEnvironment(
+        file_name="./RacingSimulatorLinux/RacingSimulator.x86_64",
+        base_port=5004,
+        seed=1,
+        additional_args=['--config-path', './agent_config.json'])
 
-def launchSimulation(sock):
-    while(1):
-        sendMessage(sock, ";SET_SPEED:1;")
-        recvResponse(sock)
-        retrieveData(sock)
-
-def racingSimulator():
-    sock = createConnection()
-    launchSimulation(sock)
+def main():
+    env = createConnection()
+    retrieveData(env)

@@ -2,14 +2,13 @@
 *.gcno
 *.gcda
 *.log
-*.json
 .cache
 *.out
 vgcore*
-*.json
 test
 *.so
 unit_tests
 .venv
 env
 __pycache__
+RacingSimulatorLinux

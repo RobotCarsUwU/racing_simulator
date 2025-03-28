@@ -1,8 +1,4 @@
-from racingSimulator import racingSimulator
-
-def main():
-    racingSimulator()
-    return 0
+from racingSimulator import main
 
 if __name__ == '__main__':
     exit(main())
