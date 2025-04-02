@@ -62,3 +62,12 @@ class MLP(MyNeuralNetwork):
 
     def derivateLoss(y_pred, y_true):
         return 2 * (y_pred - y_true) / y_true.size
+
+    def train(self, X_values, y_values, epochs, size):
+        number_values = X_values.shape(0)
+
+        for i in range(epochs):
+            output = self.propagateForward(X_values)
+            loss = self.computeLoss(y_values)
+            weight_gradient, bias_gradient = self.propagateBackward(y_values, output)
+            self.computeParams(weight_gradient, bias_gradient)
