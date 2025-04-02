@@ -13,12 +13,23 @@ class MyNeuralNetwork(ABC):
         pass
 
     @abstractmethod
-    def computeCost():
+    def computeParams():
         pass
 
     @abstractmethod
     def train():
         pass
 
+    @abstractmethod
+    def computeLoss():
+        pass
+
+    @abstractmethod
+    def derivateLoss(y_pred, y_true):
+        pass
+
     def relu(value):
         return np.max(0, value)
+
+    def derivateRelu(value):
+        return (value > 0).astype(float)
