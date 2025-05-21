@@ -4,6 +4,7 @@ from pynput import keyboard
 import csv
 from datetime import datetime
 import traceback
+import pygame
 
 up_pressed = False
 down_pressed = False
@@ -35,14 +36,17 @@ def on_release(key):
 
 def retrieveData(env):
     try:
+        pygame.init()
+        pygame.joystick.init()
+        joystick = pygame.joystick.Joystick(0)
+        joystick.init()
+
         now = datetime.now()
         filename = f"data_{now.strftime('%Y-%m-%d')}_{now.strftime('%H-%M-%S')}.csv"
 
         with open(filename, mode='w', newline='') as file:
             writer = csv.writer(file)
 
-            keyboard_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
-            keyboard_listener.start()
             env.reset()
             behavior_name = list(env.behavior_specs.keys())[0]
 
@@ -51,17 +55,13 @@ def retrieveData(env):
             writer.writerow(["Speed", "Steering"] + raycast_headers)
 
             while True:
-                steering = 0.0
-                if left_pressed:
-                    steering = -0.5
-                if right_pressed:
-                    steering = 0.5
-                
-                speed = 0.0
-                if up_pressed:
-                    speed = 1.0
-                if down_pressed:
-                    speed = -1.0
+                pygame.event.pump()
+                steering = joystick.get_axis(0)
+                speed = joystick.get_axis(5)
+                steering = max(-1.0, min(1, steering))
+                speed = max(0.0, min(1.0, speed))
+                if (-0.1 <= steering <= 0.1):
+                    steering = 0
 
                 action = ActionTuple(continuous=np.array([[speed, steering]], dtype=np.float32))
 
@@ -79,3 +79,4 @@ def retrieveData(env):
 
     finally:
         env.close()
+        pygame.quit()
