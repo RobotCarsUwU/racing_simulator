@@ -2,9 +2,8 @@ import numpy as np
 import sys
 import os
 
-from NeuralNetwork import MyNeuralNetwork
-sys.path.append(os.path.abspath(".."))
-
+# sys.path.append(os.path.abspath(".."))
+from ..NeuralNetwork import MyNeuralNetwork
 
 class MLP(MyNeuralNetwork):
 
@@ -15,6 +14,8 @@ class MLP(MyNeuralNetwork):
 
         self._layer_size = [input_size] + hidden_size + [output_size]
 
+        self._weight = []
+        self._bias = []
         for i in range(len(self._layer_size) - 1):
             W = (np.random.randn(self._layer_size[i], self._layer_size[i + 1])
                 * np.sqrt(2.0 / self._layer_size[i]))
@@ -26,14 +27,15 @@ class MLP(MyNeuralNetwork):
         self._z = []
         self._a = [X_value]
 
-        for i in range(len(self._weights) - 1):
-            z = np.dot(self._a[-1], self.weight[-1]) + self.biases[-1]
+        for i in range(len(self._weight) - 1):
+            z = np.dot(self._a[-1], self._weight[i]) + self._bias[i]
             self._z.append(z)
             a = self.relu(z)
             self._a.append(a)
 
-        output = np.dot(self._a[-1], self._weights[-1]) + self._bias[-1]
-        self._z.append(output)
+        output_z = np.dot(self._a[-1], self._weight[-1]) + self._bias[-1]
+        self._z.append(output_z)
+        output = np.tanh(output_z)
         self._a.append(output)
         return output
 
@@ -54,20 +56,20 @@ class MLP(MyNeuralNetwork):
 
     def computeParams(self, weight_gradient, bias_gradient):
         for i in range(len(self._weight)):
-            self._weight[i] -= self._alpha * weight_gradient
-            self._bias[i] -= self._alpha * bias_gradient
+            self._weight[i] -= self._alpha * weight_gradient[i]
+            self._bias[i] -= self._alpha * bias_gradient[i]
 
-    def computeLoss(y_pred, y_true):
-        return np.mean((y_pred, y_true) ** 2)
+    def computeLoss(self, y_pred, y_true):
+        return np.mean((y_pred - y_true) ** 2)
 
-    def derivateLoss(y_pred, y_true):
+    def derivateLoss(self, y_pred, y_true):
         return 2 * (y_pred - y_true) / y_true.size
 
     def train(self, X_values, y_values, epochs, size):
-        number_values = X_values.shape(0)
+        number_values = X_values.shape[0]
 
         for i in range(epochs):
             output = self.propagateForward(X_values)
-            loss = self.computeLoss(y_values)
+            loss = self.computeLoss(output, y_values)
             weight_gradient, bias_gradient = self.propagateBackward(y_values, output)
             self.computeParams(weight_gradient, bias_gradient)

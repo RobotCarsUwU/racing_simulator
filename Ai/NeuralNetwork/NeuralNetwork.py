@@ -28,8 +28,8 @@ class MyNeuralNetwork(ABC):
     def derivateLoss(y_pred, y_true):
         pass
 
-    def relu(value):
-        return np.max(0, value)
+    def relu(self, value):
+        return np.maximum(0, value)
 
-    def derivateRelu(value):
+    def derivateRelu(self, value):
         return (value > 0).astype(float)
