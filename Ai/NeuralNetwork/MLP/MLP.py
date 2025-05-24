@@ -54,9 +54,9 @@ class MLP(MyNeuralNetwork):
             bias_gradient[i] = np.sum(delta, axis=0, keepdims=True)
         return weight_gradient, bias_gradient
 
-    def computeParams(self, weight_gradient, bias_gradient):
+    def computeParams(self, weight_gradient, bias_gradient, l2_lambda=1e-4):
         for i in range(len(self._weight)):
-            self._weight[i] -= self._alpha * weight_gradient[i]
+            self._weight[i] -= self._alpha * (weight_gradient[i] + l2_lambda * self._weight[i])
             self._bias[i] -= self._alpha * bias_gradient[i]
 
     def computeLoss(self, y_pred, y_true):
@@ -68,8 +68,18 @@ class MLP(MyNeuralNetwork):
     def train(self, X_values, y_values, epochs, size):
         number_values = X_values.shape[0]
 
-        for i in range(epochs):
-            output = self.propagateForward(X_values)
-            loss = self.computeLoss(output, y_values)
-            weight_gradient, bias_gradient = self.propagateBackward(y_values, output)
-            self.computeParams(weight_gradient, bias_gradient)
+        for epoch in range(epochs):
+            indices = np.arange(number_values)
+            np.random.shuffle(indices)
+            X_shuffled = X_values[indices]
+            y_shuffled = y_values[indices]
+
+            for start_idx in range(0, number_values, size):
+                end_idx = min(start_idx + size, number_values)
+                X_batch = X_shuffled[start_idx:end_idx]
+                y_batch = y_shuffled[start_idx:end_idx]
+
+                output = self.propagateForward(X_batch)
+                loss = self.computeLoss(output, y_batch)
+                weight_gradient, bias_gradient = self.propagateBackward(y_batch, output)
+                self.computeParams(weight_gradient, bias_gradient)

@@ -1,6 +1,5 @@
 from mlagents_envs.base_env import ActionTuple, TerminalStep
 import numpy as np
-from pynput import keyboard
 import csv
 from datetime import datetime
 import traceback
@@ -13,26 +12,19 @@ right_pressed = False
 
 def on_press(key):
     global up_pressed, down_pressed, left_pressed, right_pressed
-    if key == keyboard.Key.up:
-        up_pressed = True
-    elif key == keyboard.Key.left:
-        left_pressed = True
-    elif key == keyboard.Key.right:
-        right_pressed = True
-    elif key == keyboard.Key.down:
-        down_pressed = True
+    keys = pygame.key.get_pressed()
+    up_pressed = keys[pygame.K_UP]
+    down_pressed = keys[pygame.K_DOWN]
+    left_pressed = keys[pygame.K_LEFT]
+    right_pressed = keys[pygame.K_RIGHT]
 
 def on_release(key):
     global up_pressed, down_pressed, left_pressed, right_pressed
-    if key == keyboard.Key.up:
-        up_pressed = False
-    elif key == keyboard.Key.left:
-        left_pressed = False
-    elif key == keyboard.Key.right:
-        right_pressed = False
-    elif key == keyboard.Key.down:
-        down_pressed = False
-
+    keys = pygame.key.get_pressed()
+    up_pressed = keys[pygame.K_UP]
+    down_pressed = keys[pygame.K_DOWN]
+    left_pressed = keys[pygame.K_LEFT]
+    right_pressed = keys[pygame.K_RIGHT]
 
 def retrieveData(env):
     try:
