@@ -5,33 +5,15 @@ from datetime import datetime
 import traceback
 import pygame
 
-up_pressed = False
-down_pressed = False
-left_pressed = False
-right_pressed = False
-
-def on_press(key):
-    global up_pressed, down_pressed, left_pressed, right_pressed
-    keys = pygame.key.get_pressed()
-    up_pressed = keys[pygame.K_UP]
-    down_pressed = keys[pygame.K_DOWN]
-    left_pressed = keys[pygame.K_LEFT]
-    right_pressed = keys[pygame.K_RIGHT]
-
-def on_release(key):
-    global up_pressed, down_pressed, left_pressed, right_pressed
-    keys = pygame.key.get_pressed()
-    up_pressed = keys[pygame.K_UP]
-    down_pressed = keys[pygame.K_DOWN]
-    left_pressed = keys[pygame.K_LEFT]
-    right_pressed = keys[pygame.K_RIGHT]
-
 def retrieveData(env):
     try:
         pygame.init()
         pygame.joystick.init()
-        joystick = pygame.joystick.Joystick(0)
-        joystick.init()
+        joystick_count = pygame.joystick.get_count()
+        joystick = None
+        if joystick_count > 0:
+            joystick = pygame.joystick.Joystick(0)
+            joystick.init()
 
         now = datetime.now()
         filename = f"data_{now.strftime('%Y-%m-%d')}_{now.strftime('%H-%M-%S')}.csv"
@@ -48,8 +30,21 @@ def retrieveData(env):
 
             while True:
                 pygame.event.pump()
-                steering = joystick.get_axis(0)
-                speed = joystick.get_axis(5)
+                if joystick:
+                    steering = joystick.get_axis(0)
+                    speed = joystick.get_axis(5)
+                else:
+                    keys = pygame.key.get_pressed()
+                    speed = 0.0
+                    steering = 0.0
+                    if keys[pygame.K_z]:
+                        speed = 1.0
+                    elif keys[pygame.K_s]:
+                        speed = 0.0
+                    if keys[pygame.K_q]:
+                        steering = -1.0
+                    elif keys[pygame.K_d]:
+                        steering = 1.0
                 steering = max(-1.0, min(1, steering))
                 speed = max(0.0, min(1.0, speed))
                 if (-0.1 <= steering <= 0.1):
