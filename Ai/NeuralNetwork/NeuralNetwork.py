@@ -29,7 +29,7 @@ class MyNeuralNetwork(ABC):
         pass
 
     def relu(self, value):
-        return np.maximum(0, value)
+        return np.maximum(0, value).astype(np.float32)
 
     def derivateRelu(self, value):
-        return (value > 0).astype(float)
+        return (value > 0).astype(np.float32)

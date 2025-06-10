@@ -16,6 +16,3 @@ def load_data(csv_path):
 #     X, y = load_data('all_track_data.csv')
 #     model = MLP(input_size=50, hidden_size=[32, 16], output_size=2, alpha=0.001)
 #     model.train(X, y, epochs=100, size=32)
-
-# if __name__ == '__main__':
-#     exit(main())
