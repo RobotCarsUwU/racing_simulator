@@ -12,3 +12,4 @@ unit_tests
 env
 __pycache__
 RacingSimulatorLinux
+.*

@@ -2,6 +2,7 @@ from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.base_env import ActionTuple, TerminalStep
 import numpy as np
 import traceback
+import tensorflow as tf
 
 from Data.RetrieveData import retrieveData
 from Ai.train import MLP, load_data
@@ -15,26 +16,33 @@ def createConnection():
 
 def main():
     try:
+        print("GPU disponible:", tf.config.list_physical_devices('GPU'))
         env = createConnection()
-        retrieveData(env)
-        exit(0)
-        # X, y = load_data('all_track_data_cleaned.csv')
 
-        # model = MLP(input_size=50, hidden_size=[64, 32, 16], output_size=2, alpha=0.00005)
-        # model.train(X, y, epochs=100, size=32)
+        # retrieveData(env)
+        # exit(0)
 
-        # env.reset()
-        # behavior_name = list(env.behavior_specs.keys())[0]
-        # decision_steps, _ = env.get_steps(behavior_name)
+        X, y = load_data('all_track_data_cleaned.csv')
 
-        # while True:
-        #     decision_steps, _ = env.get_steps(behavior_name)
-        #     if decision_steps.agent_id_to_index:
-        #         raycast_data = decision_steps.obs[0]
-        #         predicted = model.propagateForward(np.array(raycast_data))
-        #         action = ActionTuple(continuous=np.array(predicted, dtype=np.float32))
-        #         env.set_actions(behavior_name, action)
-        #         env.step()
+        model = MLP(input_size=50, hidden_size=[64, 32, 16], output_size=2, alpha=0.00005)
+        model.train(X, y, epochs=100, size=32)
+
+        env.reset()
+        behavior_name = list(env.behavior_specs.keys())[0]
+        decision_steps, _ = env.get_steps(behavior_name)
+
+        while True:
+            decision_steps, _ = env.get_steps(behavior_name)
+            if decision_steps.agent_id_to_index:
+                raycast_data = decision_steps.obs[0]
+                raycast_tf = tf.constant(raycast_data, dtype=tf.float32)
+
+                predicted_tf = model.propagateForward(raycast_tf)
+                predicted_np = predicted_tf.numpy()
+
+                action = ActionTuple(continuous=np.array(predicted_np, dtype=np.float32))
+                env.set_actions(behavior_name, action)
+                env.step()
 
     except Exception as e:
         print("Error occurred:")
