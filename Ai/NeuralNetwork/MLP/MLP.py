@@ -33,9 +33,9 @@ class MLP(MyNeuralNetwork):
 
         for i in range(len(self._weight) - 1):
             z = tf.matmul(self._a[-1], self._weight[i]) + self._bias[i]
-            self._z.append(tf.cast(z, tf.Float32))
-            a = self.relu(tf.cast(z, tf.Float32))
-            self._a.append(tf.cast(a, tf.Float32))
+            self._z.append(tf.cast(z, tf.float32))
+            a = self.relu(tf.cast(z, tf.float32))
+            self._a.append(tf.cast(a, tf.float32))
 
         output_z = tf.matmul(self._a[-1], self._weight[-1]) + self._bias[-1]
         self._z.append(tf.cast(output_z, tf.float32))
@@ -70,16 +70,16 @@ class MLP(MyNeuralNetwork):
 
     def computeParams(self, weight_gradient, bias_gradient, l2_lambda=1e-4):
         for i in range(len(self._weight)):
-            self._weight[i] -= self._alpha * (
+            self._weight[i].assign_sub(self._alpha * (
                 weight_gradient[i] + l2_lambda * self._weight[i]
-            )
-            self._bias[i] -= self._alpha * bias_gradient[i]
+            ))
+            self._bias[i].assign_sub(self._alpha * bias_gradient[i])
 
     def computeLoss(self, y_pred, y_true):
         return tf.reduce_mean(tf.square(y_pred - y_true))
 
     def derivateLoss(self, y_pred, y_true):
-        return 2 * (y_pred - y_true) / y_true.size
+        return 2 * (y_pred - y_true) / tf.cast(tf.size(y_true), tf.float32)
 
     def train(self, X_values, y_values, epochs, size):
         X_values = tf.cast(X_values, tf.float32)

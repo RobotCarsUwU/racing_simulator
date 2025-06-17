@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import tensorflow as tf
 import numpy as np
 
 
@@ -29,7 +30,7 @@ class MyNeuralNetwork(ABC):
         pass
 
     def relu(self, value):
-        return np.maximum(0, value).astype(np.float32)
+        return tf.maximum(0.0, value)
 
     def derivateRelu(self, value):
-        return (value > 0).astype(np.float32)
+        return tf.cast(value > 0, tf.float32)

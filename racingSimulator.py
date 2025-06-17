@@ -17,8 +17,8 @@ def createConnection():
 def main():
     try:
         print("GPU disponible:", tf.config.list_physical_devices('GPU'))
-        env = createConnection()
 
+        # env = createConnection()
         # retrieveData(env)
         # exit(0)
 
@@ -27,27 +27,25 @@ def main():
         model = MLP(input_size=50, hidden_size=[64, 32, 16], output_size=2, alpha=0.00005)
         model.train(X, y, epochs=100, size=32)
 
-        env.reset()
-        behavior_name = list(env.behavior_specs.keys())[0]
-        decision_steps, _ = env.get_steps(behavior_name)
+        print("Model trained")
 
-        while True:
-            decision_steps, _ = env.get_steps(behavior_name)
-            if decision_steps.agent_id_to_index:
-                raycast_data = decision_steps.obs[0]
-                raycast_tf = tf.constant(raycast_data, dtype=tf.float32)
+        #env.reset()
+        #behavior_name = list(env.behavior_specs.keys())[0]
+        #decision_steps, _ = env.get_steps(behavior_name)
 
-                predicted_tf = model.propagateForward(raycast_tf)
-                predicted_np = predicted_tf.numpy()
+        #while True:
+            #decision_steps, _ = env.get_steps(behavior_name)
+            #if decision_steps.agent_id_to_index:
+                #raycast_data = decision_steps.obs[0]
+                #raycast_tf = tf.constant(raycast_data, dtype=tf.float32)
 
-                action = ActionTuple(continuous=np.array(predicted_np, dtype=np.float32))
-                env.set_actions(behavior_name, action)
-                env.step()
+                #predicted_tf = model.propagateForward(raycast_tf)
+                #predicted_np = predicted_tf.numpy()
+
+                #action = ActionTuple(continuous=np.array(predicted_np, dtype=np.float32))
+                #env.set_actions(behavior_name, action)
+                #env.step()
 
     except Exception as e:
         print("Error occurred:")
         traceback.print_exc()
-
-    finally:
-        env.close()
-
