@@ -6,8 +6,7 @@ import tensorflow as tf
 import keras
 import json
 
-from Data.RetrieveData import retrieveData
-from train import load_data
+from Ai.NeuralNetwork.MLP.MLP import MLP
 
 def createConnection():
     return UnityEnvironment(
@@ -30,17 +29,17 @@ def main():
                 print(f"Erreur configuration GPU: {e}")
 
         try:
-            model = keras.models.load_model('racing_model.keras')
+            model = keras.models.load_model('racing_model.keras', custom_objects={'MLP': MLP})
             print("Model loaded")
         except:
             print("Unable to load keras model")
             return
         
         try:
-            with open('normalization_stats.json', 'r') as f:
+            with open('simple_stats.json', 'r') as f:
                 stats = json.load(f)
-            mean = np.array(stats['mean'])
-            std = np.array(stats['std'])
+            min_vals = np.array(stats['min'])
+            range_vals = np.array(stats['range'])
             print("Stat loaded")
         except:
             print("Unable to load stat")
@@ -61,7 +60,7 @@ def main():
             if len(decision_steps) > 0:
                 raycast_data = decision_steps.obs[0]
                 
-                raycast_normalized = (raycast_data - mean) / std
+                raycast_normalized = (raycast_data - min_vals) / range_vals
                 
                 predictions = model.predict(raycast_normalized, verbose=0)
                 
