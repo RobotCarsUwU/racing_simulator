@@ -4,9 +4,10 @@ import numpy as np
 import traceback
 import tensorflow as tf
 import keras
+import json
 
 from Data.RetrieveData import retrieveData
-from Ai.train import MLP, load_data
+from train import load_data
 
 def createConnection():
     return UnityEnvironment(
@@ -16,6 +17,7 @@ def createConnection():
         additional_args=['--config-path', './agent_config.json'])
 
 def main():
+    env = None
     try:
         print("GPU:", tf.config.list_physical_devices('GPU'))
         
@@ -27,94 +29,67 @@ def main():
             except RuntimeError as e:
                 print(f"Erreur configuration GPU: {e}")
 
-        X, y = load_data('all_track_data_cleaned.csv')
-        print(f"Data loaded: X shape={X.shape}, y shape={y.shape}")
-
-        model = MLP(
-            hidden_sizes=[64, 32, 16], 
-            output_size=2
-        )
+        try:
+            model = keras.models.load_model('racing_model.keras')
+            print("Model loaded")
+        except:
+            print("Unable to load keras model")
+            return
         
-        model.compile(
-            optimizer=keras.optimizers.Adam(learning_rate=0.00005),
-            loss='mse',
-            metrics=['mae']
-        )
-        
-        print("model:")
-        model.summary()
-        
-        callbacks = [
-            keras.callbacks.EarlyStopping(
-                monitor='val_loss',
-                patience=10,
-                restore_best_weights=True
-            ),
-            keras.callbacks.ReduceLROnPlateau(
-                monitor='val_loss',
-                factor=0.5,
-                patience=5,
-                min_lr=1e-7
-            )
-        ]
-        
-        history = model.fit(
-            X, y, 
-            epochs=100, 
-            batch_size=32,
-            validation_split=0.2,
-            callbacks=callbacks,
-            verbose=1
-        )
-        
-        print("Model trained")
-        
-        model.save('racing_model.keras')
-        print("Model saved as 'racing_model.keras'")
-        
-        predictions = model.predict(X[:100])
-        print(f"example: {predictions[:5]}")
-        
-        run_simulation = input("launch sim (y/n): ").lower() == 'y'
+        try:
+            with open('normalization_stats.json', 'r') as f:
+                stats = json.load(f)
+            mean = np.array(stats['mean'])
+            std = np.array(stats['std'])
+            print("Stat loaded")
+        except:
+            print("Unable to load stat")
+            return
         
         env = createConnection()
         env.reset()
-        if run_simulation:
-            behavior_name = list(env.behavior_specs.keys())[0]
+        
+        behavior_name = list(env.behavior_specs.keys())[0]
+        
+        print("Starting simu...")
+        step_count = 0
+        max_steps = 2000
+        
+        while step_count < max_steps:
+            decision_steps, terminal_steps = env.get_steps(behavior_name)
             
-            print("Starting...")
-            step_count = 0
-            max_steps = 1000
-            
-            while step_count < max_steps:
-                decision_steps, terminal_steps = env.get_steps(behavior_name)
+            if len(decision_steps) > 0:
+                raycast_data = decision_steps.obs[0]
                 
-                if len(decision_steps) > 0:
-                    raycast_data = decision_steps.obs[0]
-                    
-                    predictions = model.predict(raycast_data)
-                    
-                    action = ActionTuple(continuous=predictions.astype(np.float32))
-                    env.set_actions(behavior_name, action)
-                    env.step()
-                    
-                    step_count += 1
-                    
-                    if step_count % 100 == 0:
-                        print(f"Étape {step_count}, Action: {predictions[0]}")
+                raycast_normalized = (raycast_data - mean) / std
                 
-                if len(terminal_steps) > 0:
-                    print("Epoch done")
-                    env.reset()
-                    step_count = 0
+                predictions = model.predict(raycast_normalized, verbose=0)
+                
+                speed = np.clip(predictions[0][0], 0.0, 0.8)
+                steering = np.clip(predictions[0][1], -0.8, 0.8)
+                
+                action = ActionTuple(continuous=np.array([[speed, steering]], dtype=np.float32))
+                env.set_actions(behavior_name, action)
+                env.step()
+                
+                step_count += 1
+                
+                if step_count % 50 == 0:
+                    print(f"Étape {step_count}, Speed: {speed:.3f}, Steering: {steering:.3f}")
             
-            env.close()
-            print("Sim over")
+            if len(terminal_steps) > 0:
+                print("Epoch ended")
+                env.reset()
+                step_count = 0
 
     except KeyboardInterrupt:
-        print("\nCancel")
+        print("\nSim interrupted")
     except Exception as e:
-        print("Error:")
+        print("Error during sim")
         traceback.print_exc()
     finally:
-        env.close()
+        if env:
+            env.close()
+
+if __name__ == "__main__":
+    main()

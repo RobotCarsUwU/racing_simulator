@@ -4,8 +4,10 @@ from keras import layers
 import numpy as np
 
 class MLP(keras.Model):
-    def __init__(self, hidden_sizes, output_size, **kwargs):
+    def __init__(self, input_size, hidden_sizes, output_size, **kwargs):
         super(MLP, self).__init__(**kwargs)
+        
+        self.input_layer = layers.InputLayer(input_shape=(input_size,))
         
         self.hidden_layers = []
         for hidden_size in hidden_sizes:
@@ -15,15 +17,20 @@ class MLP(keras.Model):
                 kernel_initializer='he_normal',
                 kernel_regularizer=keras.regularizers.l2(1e-4)
             ))
-            self.hidden_layers.append(layers.Dropout(0.1))
+            self.hidden_layers.append(layers.Dropout(0.2))
         
-        self.output_layer = layers.Dense(output_size, activation='tanh')
+        self.speed_output = layers.Dense(1, activation='sigmoid', name='speed')
+        self.steering_output = layers.Dense(1, activation='tanh', name='steering')
     
     def call(self, inputs, training=None):
         x = inputs
         for layer in self.hidden_layers:
             x = layer(x, training=training)
-        return self.output_layer(x)
+        
+        speed = self.speed_output(x)
+        steering = self.steering_output(x)
+        
+        return tf.concat([speed, steering], axis=1)
     
     def get_config(self):
         config = super(MLP, self).get_config()
