@@ -53,7 +53,7 @@ def simple_normalize(X, stats_path="simple_stats.json", fit=True):
 
 
 def main():
-    X, y = load_data("all_track_data_cleaned.csv")
+    X, y = load_data("all_track_data_cleaned_new.csv")
     print(f"Data loaded : X shape={X.shape}, y shape={y.shape}")
 
     X_normalized, stats = simple_normalize(X, fit=True)
