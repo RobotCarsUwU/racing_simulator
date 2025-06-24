@@ -52,7 +52,7 @@ def main():
         
         print("Starting simu...")
         step_count = 0
-        max_steps = 2000
+        max_steps = 132000
         
         while step_count < max_steps:
             decision_steps, terminal_steps = env.get_steps(behavior_name)
@@ -62,7 +62,8 @@ def main():
                 
                 raycast_normalized = (raycast_data - min_vals) / range_vals
                 
-                predictions = model.predict(raycast_normalized, verbose=0)
+                # predictions = model.predict(raycast_normalized, verbose=0)
+                predictions = model(raycast_normalized, training=False).numpy()
                 
                 speed = np.clip(predictions[0][0], 0.0, 0.8)
                 steering = np.clip(predictions[0][1], -0.8, 0.8)
