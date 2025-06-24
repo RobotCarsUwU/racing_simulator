@@ -65,7 +65,7 @@ def main():
                 # predictions = model.predict(raycast_normalized, verbose=0)
                 predictions = model(raycast_normalized, training=False).numpy()
                 
-                speed = np.clip(predictions[0][0], 0.0, 0.8)
+                speed = np.clip(predictions[0][0], 0.0, 0.5)
                 steering = np.clip(predictions[0][1], -0.8, 0.8)
                 
                 action = ActionTuple(continuous=np.array([[speed, steering]], dtype=np.float32))
