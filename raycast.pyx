@@ -61,7 +61,7 @@ cpdef raycast_fast_lookup(np.uint8_t[:, :] g, int n=30, int max_distance=500):
             distances[i] = max_distance
     return distances
 
-def preprocess_image_fast(image_path_or_array: str):
+def preprocess_image_fast(image_path_or_array):
     """Prétraitement optimisé pour Python 3.6, version Cython"""
     # Use Python variable declarations for compatibility
     # g = None
