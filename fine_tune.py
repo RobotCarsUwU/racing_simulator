@@ -50,7 +50,7 @@ def create_or_load_model(input_size, pretrained_weights_path="racing_model.weigh
     if os.path.exists(pretrained_weights_path):
         
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(lr=0.0001),
+            optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
             loss="mse",
             metrics=["mae"],
         )
@@ -63,7 +63,7 @@ def create_or_load_model(input_size, pretrained_weights_path="racing_model.weigh
             return model, False
     else:
         model.compile(
-            optimizer=tf.keras.optimizers.Adam(lr=0.001),
+            optimizer=tf.keras.optimizers.Adam(lr=0.01),
             loss="mse",
             metrics=["mae"],
         )
@@ -82,6 +82,7 @@ def main():
     model, is_fine_tuning = create_or_load_model(X.shape[1])
     
     if is_fine_tuning:
+        print("Launching fine tuning")
         epochs = 25
         patience = 8
         lr_patience = 5
