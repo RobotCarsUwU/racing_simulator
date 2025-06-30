@@ -62,7 +62,6 @@ def main():
                 
                 raycast_normalized = (raycast_data - min_vals) / range_vals
                 
-                # predictions = model.predict(raycast_normalized, verbose=0)
                 predictions = model(raycast_normalized, training=False).numpy()
                 
                 speed = np.clip(predictions[0][0], 0.0, 0.5)
